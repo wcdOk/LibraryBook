@@ -1,2 +1,59 @@
 include ':app'
+//多线程
+include ':comp_progress'
+//数据结构
+include ':lib_structure'
+//逆向
+include ':lib_reverse'
+//算法
+include ':lib_sort'
+//kotlin
+include ':comp_kotlin'
+//RN
+include ':comp_RN'
+//flutter
+include ':comp_flutter'
+//音视频
+include ':comp_video'
+//JNI
+include ':comp_ndk'
+//开源rxjava
+include ':comp_rxJava'
+//网络框架
+include ':comp_okHttp'
+//图片加载框架
+include ':comp_glide'
+//路由框架
+include ':comp_arouter'
+//插件框架
+include ':comp_virtualAPK'
+//热修复框架
+include ':comp_tinker'
+//gradle插件
+include ':lib_gradle'
+//性能优化
+include ':comp_property'
+//存储
+include ':comp_save'
+//四大组件+Fragment
+include ':comp_Component'
+//framework层面的分析
+include ':comp_framework'
+//UI，动画
+include ':comp_UI'
+//设计模式
+include ':lib_designMode'
+//IO操作
+include ':lib_io'
+//虚拟机相关的操作
+include ':lib_art'
+//类加载，hook，反射
+include ':lib_classloader'
+//序列化
+include ':lib_serialization'
+//框架[泛型/注解]
+include ':lib_frame'
+//并发编程
+include ':lib_thread'
+
 rootProject.name = "LibraryBook"
