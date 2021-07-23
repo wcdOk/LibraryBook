@@ -55,5 +55,8 @@ include ':lib_serialization'
 include ':lib_frame'
 //并发编程
 include ':lib_thread'
+//加固
+include ':comp_strengthen'
+include ':lib_strengthen'
 
 rootProject.name = "LibraryBook"
