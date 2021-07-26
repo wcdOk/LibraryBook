@@ -34,7 +34,10 @@ import java.util.List;
  *
  */
 public class ProxyApplication  extends Application {
-    //定义好解密后文件的存储路径
+//    <!--真实的Application的全名-->
+//    <meta-data android:name="app_name" android:value="com.wcdok.librarybook.SelfApplication"/>
+//    <!--版本号-->
+//    <meta-data android:name="app_version" android:value="1.0"/>
     private String app_name;
     private String app_version;
 
