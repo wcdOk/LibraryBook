@@ -1,3 +1,6 @@
+include ':comp_AOP'
+include ':comp_IOC'
+include ':comp_plugin'
 include ':app'
 //多线程
 include ':comp_progress'
@@ -30,7 +33,7 @@ include ':comp_virtualAPK'
 //热修复框架
 include ':comp_tinker'
 //gradle插件
-include ':lib_gradle'
+include ':lib_groovy_plugin'
 //性能优化
 include ':comp_property'
 //存储

@@ -1,0 +1,194 @@
+apply from: rootDir.absolutePath + "/comp_tinker/tinker_param.gradle"
+
+project.ext.setTinkerDefaultConfig project.android
+project.ext.setDependencies project.dependencies
+
+
+
+if (buildWithTinker()) {
+    apply plugin: 'com.tencent.tinker.patch'
+    project.tinkerPatch {
+        oldApk = getOldApkPath()
+        ignoreWarning = false
+        useSign = true
+        tinkerEnable = buildWithTinker()
+        buildConfig {
+            applyMapping = getApplyMappingPath()
+            applyResourceMapping = getApplyResourceMappingPath()
+            tinkerId =  getTinkerIdValue()
+            keepDexApply = false
+            isProtectedApp = false
+            supportHotplugComponent = false
+        }
+
+        dex {
+            dexMode = "jar"
+            pattern = ["classes*.dex",
+                       "assets/secondary-dex-?.jar"]
+            loader = [
+                    "tinker.sample.android.app.BaseBuildInfo"
+            ]
+        }
+        lib {
+            pattern = ["lib/*/*.so"]
+        }
+        res {
+            pattern = ["res/*", "assets/*", "resources.arsc", "AndroidManifest.xml"]
+            ignoreChange = ["assets/sample_meta.txt"]
+            largeModSize = 100
+        }
+
+        packageConfig {
+            configField("patchMessage", "tinker is sample to use")
+            configField("platform", "all")
+            configField("patchVersion", "1.0")
+        }
+
+        sevenZip {
+            zipArtifact = "com.tencent.mm:SevenZip:1.1.10"
+        }
+    }
+
+    List<String> flavors = new ArrayList<>();
+    project.android.productFlavors.each { flavor ->
+        flavors.add(flavor.name)
+    }
+    boolean hasFlavors = flavors.size() > 0
+    def date = new Date().format("MMdd-HH-mm-ss")
+
+    android.applicationVariants.all { variant ->
+        def taskName = variant.name
+
+        tasks.all {
+            if ("assemble${taskName.capitalize()}".equalsIgnoreCase(it.name)) {
+
+                it.doLast {
+                    copy {
+                        def fileNamePrefix = "${project.name}-${variant.baseName}"
+                        def newFileNamePrefix = hasFlavors ? "${fileNamePrefix}" : "${fileNamePrefix}-${date}"
+
+                        def destPath = hasFlavors ? file("${bakPath}/${project.name}-${date}/${variant.flavorName}") : bakPath
+
+                        if (variant.metaClass.hasProperty(variant, 'packageApplicationProvider')) {
+                            def packageAndroidArtifact = variant.packageApplicationProvider.get()
+                            if (packageAndroidArtifact != null) {
+                                try {
+                                    from new File(packageAndroidArtifact.outputDirectory.getAsFile().get(), variant.outputs.first().apkData.outputFileName)
+                                } catch (Exception e) {
+                                    from new File(packageAndroidArtifact.outputDirectory, variant.outputs.first().apkData.outputFileName)
+                                }
+                            } else {
+                                from variant.outputs.first().mainOutputFile.outputFile
+                            }
+                        } else {
+                            from variant.outputs.first().outputFile
+                        }
+
+                        into destPath
+                        rename { String fileName ->
+                            fileName.replace("${fileNamePrefix}.apk", "${newFileNamePrefix}.apk")
+                        }
+
+                        def dirName = variant.dirName
+                        if (hasFlavors) {
+                            dirName = taskName
+                        }
+                        from "${buildDir}/outputs/mapping/${dirName}/mapping.txt"
+                        into destPath
+                        rename { String fileName ->
+                            fileName.replace("mapping.txt", "${newFileNamePrefix}-mapping.txt")
+                        }
+
+                        from "${buildDir}/intermediates/symbols/${dirName}/R.txt"
+                        from "${buildDir}/intermediates/symbol_list/${dirName}/R.txt"
+                        from "${buildDir}/intermediates/runtime_symbol_list/${dirName}/R.txt"
+                        into destPath
+                        rename { String fileName ->
+                            fileName.replace("R.txt", "${newFileNamePrefix}-R.txt")
+                        }
+                    }
+                }
+            }
+        }
+    }
+    project.afterEvaluate {
+        //sample use for build all flavor for one time
+        if (hasFlavors) {
+            task(tinkerPatchAllFlavorRelease) {
+                group = 'tinker'
+                def originOldPath =  project.getTinkerBuildFlavorDirectory()
+                for (String flavor : flavors) {
+                    def tinkerTask = tasks.getByName("tinkerPatch${flavor.capitalize()}Release")
+                    dependsOn tinkerTask
+                    def preAssembleTask = tasks.getByName("process${flavor.capitalize()}ReleaseManifest")
+                    preAssembleTask.doFirst {
+                        String flavorName = preAssembleTask.name.substring(7, 8).toLowerCase() + preAssembleTask.name.substring(8, preAssembleTask.name.length() - 15)
+                        project.tinkerPatch.oldApk = "${originOldPath}/${flavorName}/${project.name}-${flavorName}-release.apk"
+                        project.tinkerPatch.buildConfig.applyMapping = "${originOldPath}/${flavorName}/${project.name}-${flavorName}-release-mapping.txt"
+                        project.tinkerPatch.buildConfig.applyResourceMapping = "${originOldPath}/${flavorName}/${project.name}-${flavorName}-release-R.txt"
+
+                    }
+
+                }
+            }
+
+            task(tinkerPatchAllFlavorDebug) {
+                group = 'tinker'
+                def originOldPath =  project.getTinkerBuildFlavorDirectory()
+                for (String flavor : flavors) {
+                    def tinkerTask = tasks.getByName("tinkerPatch${flavor.capitalize()}Debug")
+                    dependsOn tinkerTask
+                    def preAssembleTask = tasks.getByName("process${flavor.capitalize()}DebugManifest")
+                    preAssembleTask.doFirst {
+                        String flavorName = preAssembleTask.name.substring(7, 8).toLowerCase() + preAssembleTask.name.substring(8, preAssembleTask.name.length() - 13)
+                        project.tinkerPatch.oldApk = "${originOldPath}/${flavorName}/${project.name}-${flavorName}-debug.apk"
+                        project.tinkerPatch.buildConfig.applyMapping = "${originOldPath}/${flavorName}/${project.name}-${flavorName}-debug-mapping.txt"
+                        project.tinkerPatch.buildConfig.applyResourceMapping = "${originOldPath}/${flavorName}/${project.name}-${flavorName}-debug-R.txt"
+                    }
+
+                }
+            }
+        }
+    }
+}
+def gitSha() {
+    try {
+        String gitRev = 'git rev-parse --short HEAD'.execute(null, project.rootDir).text.trim()
+        if (gitRev == null) {
+            throw new GradleException("can't get git rev, you should add git to system path or just input test value, such as 'testTinkerId'")
+        }
+        return gitRev
+    } catch (Exception e) {
+        throw new GradleException("can't get git rev, you should add git to system path or just input test value, such as 'testTinkerId'")
+    }
+}
+
+
+def buildWithTinker() {
+    return hasProperty("TINKER_ENABLE") ? Boolean.parseBoolean(TINKER_ENABLE) : project.ext.tinkerEnabled
+}
+def getOldApkPath() {
+    return hasProperty("OLD_APK") ? OLD_APK : ext.tinkerOldApkPath
+}
+def getApplyMappingPath() {
+    return hasProperty("APPLY_MAPPING") ? APPLY_MAPPING : ext.tinkerApplyMappingPath
+}
+
+def getApplyResourceMappingPath() {
+    return hasProperty("APPLY_RESOURCE") ? APPLY_RESOURCE : ext.tinkerApplyResourcePath
+}
+
+def getTinkerIdValue() {
+    return hasProperty("TINKER_ID") ? TINKER_ID : gitSha()
+}
+
+
+
+def getTinkerBuildFlavorDirectory() {
+    return ext.tinkerBuildFlavorDirectory
+}
+
+
+
+
+

@@ -1,0 +1,68 @@
+def bakPath = file("${buildDir}/bakApk/")
+
+ext {
+    tinkerEnabled = true
+    tinkerOldApkPath = "${bakPath}/app-debug-0424-15-02-56.apk"
+    tinkerApplyMappingPath = "${bakPath}/app-debug-1018-17-32-47-mapping.txt"
+    tinkerApplyResourcePath = "${bakPath}/app-debug-0424-15-02-56-R.txt"
+    tinkerBuildFlavorDirectory = "${bakPath}/app-1018-17-32-47"
+
+    setTinkerDefaultConfig = { extension ->
+        extension.defaultConfig{
+            multiDexEnabled true
+            multiDexKeepProguard file("tinker_multidexkeep.pro")
+            buildConfigField "String", "MESSAGE", "\"I am the base apk\""
+            buildConfigField "String", "TINKER_ID", "\"${getTinkerIdValue2()}\""
+            buildConfigField "String", "PLATFORM", "\"all\""
+        }
+    }
+
+    setDependencies = { extension ->
+        print "走到这里啦"
+        if (is_gradle_3()) {
+            extension.api("com.tencent.tinker:tinker-android-lib:${TINKER_VERSION}") { changing = true }
+            extension.implementation("com.tencent.tinker:tinker-android-loader:${TINKER_VERSION}") { changing = true }
+            extension.annotationProcessor("com.tencent.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
+            extension.compileOnly("com.tencent.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
+            extension.compileOnly("com.tencent.tinker:tinker-android-anno-support:${TINKER_VERSION}") { changing = true }
+            extension.implementation "androidx.multidex:multidex:2.0.1"
+        } else {
+            extension.compile("com.tencent.tinker:tinker-android-lib:${TINKER_VERSION}") { changing = true }
+            extension.provided("com.tencent.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
+            extension.provided("com.tencent.tinker:tinker-android-anno-support:${TINKER_VERSION}") { changing = true }
+            extension.compile "androidx.multidex:multidex:2.0.1"
+        }
+
+
+    }
+}
+
+task sortPublicTxt() {
+    doLast {
+        File originalFile = project.file("public.txt")
+        File sortedFile = project.file("public_sort.txt")
+        List<String> sortedLines = new ArrayList<>()
+        originalFile.eachLine {
+            sortedLines.add(it)
+        }
+        Collections.sort(sortedLines)
+        sortedFile.delete()
+        sortedLines.each {
+            sortedFile.append("${it}\n")
+        }
+    }
+}
+def getTinkerIdValue2() {
+    return hasProperty("TINKER_ID") ? TINKER_ID : gitSha2()
+}
+def gitSha2() {
+    try {
+        String gitRev = 'git rev-parse --short HEAD'.execute(null, project.rootDir).text.trim()
+        if (gitRev == null) {
+            throw new GradleException("can't get git rev, you should add git to system path or just input test value, such as 'testTinkerId'")
+        }
+        return gitRev
+    } catch (Exception e) {
+        throw new GradleException("can't get git rev, you should add git to system path or just input test value, such as 'testTinkerId'")
+    }
+}
