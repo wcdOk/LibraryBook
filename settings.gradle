@@ -1,4 +1,9 @@
 include ':comp_AOP'
+setBinding(new Binding([gradle: this]))
+evaluate(new File(
+  settingsDir,
+  '../comp_flutter/.android/include_flutter.groovy'
+))
 include ':comp_IOC'
 include ':comp_plugin'
 include ':app'
@@ -15,7 +20,7 @@ include ':comp_kotlin'
 //RN
 include ':comp_RN'
 //flutter
-include ':comp_flutter'
+//include ':comp_flutter'
 //音视频
 include ':comp_video'
 //JNI
@@ -63,3 +68,9 @@ include ':comp_strengthen'
 include ':lib_strengthen'
 
 rootProject.name = "LibraryBook"
+
+include ':comp_flutter'
+project(':comp_flutter').projectDir = new File('../comp_flutter')
+
+include ':comp_flutter'
+project(':comp_flutter').projectDir = new File('../comp_flutter')

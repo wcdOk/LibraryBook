@@ -1,7 +1,11 @@
 package com.wcdok.librarybook;
 
 import android.app.Application;
+import android.content.Context;
 import android.util.Log;
+
+import androidx.multidex.MultiDex;
+
 
 /**
  * @author: wcd
@@ -10,6 +14,12 @@ import android.util.Log;
  * @desc:
  */
 public class SelfApplication extends Application {
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(base);
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();

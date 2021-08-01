@@ -3,26 +3,30 @@
     package="com.wcdok.librarybook">
 
     <application
-        android:name="com.wcdok.librarybook.SelfApplication"
+        android:name=".SelfApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.LibraryBook">
-<!--        android:name="com.wcdok.comp_strengthen.ProxyApplication"-->
-        <!--真实的Application的全名-->
-        <meta-data android:name="app_name" android:value="com.wcdok.librarybook.SelfApplication"/>
-        <!--用于dex后的目录名_版本号,代码中用String接收的-->
-        <meta-data android:name="app_version" android:value="v1.0"/>
-
+        <activity android:name=".flutter.FlutterActivity"></activity>
+        <!-- android:name="com.wcdok.comp_strengthen.ProxyApplication" -->
+        <!-- 真实的Application的全名 -->
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
+        </activity> <!-- 用于dex后的目录名_版本号,代码中用String接收的 -->
+        <meta-data
+            android:name="app_version"
+            android:value="v1.0" />
+
+        <meta-data
+            android:name="app_name"
+            android:value="com.wcdok.librarybook.SelfApplication" />
     </application>
 
 </manifest>

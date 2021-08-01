@@ -3,7 +3,7 @@ package com.wcdok.comp_aop;
 import android.util.Log;
 
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 
 /**
@@ -35,8 +35,10 @@ import org.aspectj.lang.annotation.Aspect;
 @Aspect
 public class AspectJActivity {
 
-    @Around("execution(* android.app.Activity.on**(..))")
+    @After("execution(* android.app.Activity.on**(..))")
     public void onResumeMethod(JoinPoint joinPoint) throws Throwable {
-        Log.e("AspectJActivity","---------");
+        Log.i("AspectJActivity", "aspect:::" + joinPoint.getSignature());
     }
+
+
 }

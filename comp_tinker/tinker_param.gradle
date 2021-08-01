@@ -1,7 +1,7 @@
 def bakPath = file("${buildDir}/bakApk/")
-
 ext {
     tinkerEnabled = true
+    apkBakPath = bakPath
     tinkerOldApkPath = "${bakPath}/app-debug-0424-15-02-56.apk"
     tinkerApplyMappingPath = "${bakPath}/app-debug-1018-17-32-47-mapping.txt"
     tinkerApplyResourcePath = "${bakPath}/app-debug-0424-15-02-56-R.txt"
@@ -18,7 +18,6 @@ ext {
     }
 
     setDependencies = { extension ->
-        print "走到这里啦"
         if (is_gradle_3()) {
             extension.api("com.tencent.tinker:tinker-android-lib:${TINKER_VERSION}") { changing = true }
             extension.implementation("com.tencent.tinker:tinker-android-loader:${TINKER_VERSION}") { changing = true }

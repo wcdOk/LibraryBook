@@ -3,8 +3,6 @@ apply from: rootDir.absolutePath + "/comp_tinker/tinker_param.gradle"
 project.ext.setTinkerDefaultConfig project.android
 project.ext.setDependencies project.dependencies
 
-
-
 if (buildWithTinker()) {
     apply plugin: 'com.tencent.tinker.patch'
     project.tinkerPatch {
@@ -67,7 +65,7 @@ if (buildWithTinker()) {
                         def fileNamePrefix = "${project.name}-${variant.baseName}"
                         def newFileNamePrefix = hasFlavors ? "${fileNamePrefix}" : "${fileNamePrefix}-${date}"
 
-                        def destPath = hasFlavors ? file("${bakPath}/${project.name}-${date}/${variant.flavorName}") : bakPath
+                        def destPath = hasFlavors ? file("${project.ext.apkBakPath}/${project.name}-${date}/${variant.flavorName}") : project.ext.apkBakPath
 
                         if (variant.metaClass.hasProperty(variant, 'packageApplicationProvider')) {
                             def packageAndroidArtifact = variant.packageApplicationProvider.get()

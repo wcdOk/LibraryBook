@@ -1,10 +1,13 @@
 apply plugin:'com.android.application'
 apply plugin: 'android-aspectjx'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
 apply from: rootDir.absolutePath + "/comp_tinker/tinker.gradle"
 
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
+
 
     defaultConfig {
         applicationId "com.wcdok.librarybook"
@@ -18,6 +21,8 @@ android {
 
     buildTypes {
         release {
+            zipAlignEnabled true
+            shrinkResources false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -26,6 +31,11 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    lintOptions {
+        quiet true
+        abortOnError false
+    }
+
     dexOptions {
         jumboMode = true
     }
@@ -42,7 +52,10 @@ aspectjx {
     //关闭AspectJX功能
     //enabled false
 }
-
+aspectjx {
+    //关闭AspectJX功能
+    enabled true
+}
 
 dependencies {
 
@@ -52,4 +65,5 @@ dependencies {
     implementation project(":comp_strengthen")
     implementation project(":comp_AOP")
     implementation project(":comp_tinker")
+    implementation project(path: ':flutter')
 }
